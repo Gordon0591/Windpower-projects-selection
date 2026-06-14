@@ -1,9 +1,6 @@
 {
-  "installCommand": "cd web && npm install",
-  "buildCommand": "cd web && npm run build",
-  "outputDirectory": "web/dist",
+  "outputDirectory": "web-static",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://YOUR_BACKEND_URL/v1/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/preview.html" }
   ]
 }

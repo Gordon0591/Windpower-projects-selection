@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>风电项目信息 — 预览版</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: { 50: '#f0fdf4', 100: '#dcfce7', 600: '#16a34a', 700: '#15803d', 800: '#166534', 900: '#14532d' },
+      }
+    }
+  }
+}
+</script>
+<style>
+body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#f5f5f5; }
+.status-planned { background:#f3f4f6; color:#6b7280; }
+.status-approved { background:#fef3c7; color:#d97706; }
+.status-bidding { background:#dbeafe; color:#2563eb; }
+.status-construction { background:#fce7f3; color:#db2777; }
+.status-grid_connected { background:#d1fae5; color:#059669; }
+.status-completed { background:#dcfce7; color:#16a34a; }
+.status-shelved { background:#fee2e2; color:#dc2626; }
+.status-cancelled { background:#f3f4f6; color:#9ca3af; }
+.scrollbar-hide::-webkit-scrollbar { display:none; }
+</style>
+</head>
+<body class="text-gray-900">
+
+<!-- 顶部导航 -->
+<header class="sticky top-0 z-50 bg-primary-800 text-white shadow-md">
+  <div class="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+    <div class="flex items-center gap-2 font-bold text-lg cursor-pointer" onclick="showPage('home')">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <span>风电项目信息</span>
+    </div>
+    <nav class="flex items-center gap-1">
+      <button onclick="showPage('home')" id="nav-home" class="px-4 py-2 rounded-lg text-sm font-medium bg-white/20">项目</button>
+      <button onclick="showPage('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10">看板</button>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-4xl mx-auto" id="app"></main>
+
+<script>
+// ====== 内嵌示例数据（无需后端 API）======
+const SAMPLE_DATA = [
+  {id:1,name:"华能吉林白城通榆 500MW 风电项目",province:{id:1,name:"吉林",region:"东北"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:500,turbine_count:100,unit_capacity_mw:5.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"construction",name:"在建"},owner:"华能集团",turbine_supplier:"远景能源",investment_bn:35.5,approval_date:"2024-03-15",construction_start_date:"2024-09-01",planned_cod_date:"2025-12-31",description:"吉林省白城市通榆县大型陆上风电基地项目，采用远景能源 5.0MW 机组，配套建设 220kV 升压站。",is_verified:true,sources:[{source_name:"吉林省发改委核准批复",source_url:"https://example.com/jl-2024-001",captured_at:"2024-06-15T10:30:00Z"}]},
+  {id:2,name:"三峡能源广东阳江青洲 1000MW 海上风电项目",province:{id:2,name:"广东",region:"华南"},project_type:{code:"offshore",name:"海上风电"},capacity_mw:1000,turbine_count:83,unit_capacity_mw:12.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"construction",name:"在建"},owner:"三峡能源",turbine_supplier:"明阳智能",investment_bn:185.0,approval_date:"2023-06-20",construction_start_date:"2024-02-15",planned_cod_date:"2026-06-30",description:"广东省阳江市海域大型海上风电项目，水深 30-40 米，采用明阳智能 MySE12-242 抗台风型机组。",is_verified:true,sources:[{source_name:"广东省能源局批复",source_url:"https://example.com/gd-offshore-001",captured_at:"2024-08-20T09:00:00Z"}]},
+  {id:3,name:"龙源电力内蒙古乌兰察布四子王旗 600MW 风电项目",province:{id:3,name:"内蒙古",region:"华北"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:600,turbine_count:120,unit_capacity_mw:5.0,tower_type:{code:"hybrid",name:"混塔"},status:{code:"approved",name:"核准"},owner:"龙源电力",turbine_supplier:"金风科技",investment_bn:42.0,approval_date:"2025-01-10",description:"内蒙古乌兰察布市四子王旗风电基地三期，采用金风科技 5.0MW 机组，混塔方案适应高风速区域。",is_verified:true,sources:[{source_name:"内蒙古能源局核准公告",source_url:"https://example.com/nmg-2025-003",captured_at:"2025-02-01T11:00:00Z"}]},
+  {id:4,name:"中广核山东威海荣成 800MW 海上风电项目",province:{id:4,name:"山东",region:"华东"},project_type:{code:"offshore",name:"海上风电"},capacity_mw:800,turbine_count:67,unit_capacity_mw:12.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"bidding",name:"招标"},owner:"中广核",turbine_supplier:"待定",investment_bn:152.0,approval_date:"2024-11-08",description:"山东威海荣成海域，正在风机招标阶段，计划 2026 年开工。",is_verified:false,sources:[{source_name:"中广核招标公告",source_url:"https://example.com/cgn-2024-bid",captured_at:"2025-03-10T14:00:00Z"}]},
+  {id:5,name:"国家电投青海海南州共和 400MW 风电项目",province:{id:5,name:"青海",region:"西北"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:400,turbine_count:80,unit_capacity_mw:5.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"grid_connected",name:"并网"},owner:"国家电投",turbine_supplier:"运达股份",investment_bn:28.0,approval_date:"2023-04-15",construction_start_date:"2023-10-01",completion_date:"2025-03-20",planned_cod_date:"2025-03-31",description:"青海省海南州共和县高原风电项目，已全容量并网发电，年利用小时数约 2300h。",is_verified:true,sources:[{source_name:"国家电投并网公告",source_url:"https://example.com/spic-qh-2025",captured_at:"2025-04-05T08:30:00Z"}]},
+  {id:6,name:"华电福建漳州东山 500MW 海上风电项目",province:{id:6,name:"福建",region:"华东"},project_type:{code:"offshore",name:"海上风电"},capacity_mw:500,turbine_count:42,unit_capacity_mw:12.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"approved",name:"核准"},owner:"华电集团",turbine_supplier:"东方风电",investment_bn:95.0,approval_date:"2024-08-18",description:"福建漳州东山县海域，拟采用东方风电 12MW 直驱机组，计划 2025 年下半年开工。",is_verified:true,sources:[{source_name:"福建省发改委批复",source_url:"https://example.com/fj-2024-offshore",captured_at:"2024-09-01T10:00:00Z"}]},
+  {id:7,name:"中国绿发新疆哈密 700MW 风电项目",province:{id:7,name:"新疆",region:"西北"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:700,turbine_count:140,unit_capacity_mw:5.0,tower_type:{code:"hybrid",name:"混塔"},status:{code:"construction",name:"在建"},owner:"中国绿发",turbine_supplier:"远景能源",investment_bn:49.0,approval_date:"2024-05-20",construction_start_date:"2024-10-15",planned_cod_date:"2026-03-31",description:"新疆哈密市三塘湖风区，采用远景能源 5.0MW 机组 + 混塔方案，年等效满发小时数超 2800h。",is_verified:true,sources:[{source_name:"新疆发改委核准",source_url:"https://example.com/xj-2024-007",captured_at:"2024-11-20T12:00:00Z"}]},
+  {id:8,name:"大唐集团辽宁铁岭昌图 300MW 风电项目",province:{id:8,name:"辽宁",region:"东北"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:300,turbine_count:60,unit_capacity_mw:5.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"completed",name:"完工"},owner:"大唐集团",turbine_supplier:"金风科技",investment_bn:21.0,approval_date:"2022-09-10",construction_start_date:"2023-04-01",completion_date:"2024-12-15",description:"辽宁省铁岭市昌图县风电项目，采用金风科技 GW171/5.0 机组，已全容量并网。",is_verified:true,sources:[{source_name:"大唐集团竣工验收报告",source_url:"https://example.com/dt-ln-complete",captured_at:"2025-01-10T16:00:00Z"}]},
+  {id:9,name:"中核集团浙江舟山岱山 300MW 海上风电项目",province:{id:9,name:"浙江",region:"华东"},project_type:{code:"offshore",name:"海上风电"},capacity_mw:300,turbine_count:25,unit_capacity_mw:12.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"bidding",name:"招标"},owner:"中核集团",turbine_supplier:"待定",investment_bn:60.0,approval_date:"2025-03-01",description:"浙江舟山岱山县海域海上风电项目，已核准正在风机招标。",is_verified:false,sources:[{source_name:"浙江省能源局核准",source_url:"https://example.com/zj-2025-offshore",captured_at:"2025-04-01T09:00:00Z"}]},
+  {id:10,name:"国华投资河北张家口张北 450MW 风电项目",province:{id:10,name:"河北",region:"华北"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:450,turbine_count:90,unit_capacity_mw:5.0,tower_type:{code:"hybrid",name:"混塔"},status:{code:"grid_connected",name:"并网"},owner:"国华投资",turbine_supplier:"联合动力",investment_bn:31.5,approval_date:"2023-07-12",construction_start_date:"2024-01-20",completion_date:"2025-06-10",planned_cod_date:"2025-06-30",description:"河北张家口张北县坝上风区，采用联合动力 5.0MW + 混塔方案，已并网发电。",is_verified:true,sources:[{source_name:"国华投资并网公告",source_url:"https://example.com/gh-2025-grid",captured_at:"2025-06-15T11:00:00Z"}]},
+  {id:11,name:"华润电力江苏盐城大丰 600MW 海上风电项目",province:{id:11,name:"江苏",region:"华东"},project_type:{code:"offshore",name:"海上风电"},capacity_mw:600,turbine_count:50,unit_capacity_mw:12.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"grid_connected",name:"并网"},owner:"华润电力",turbine_supplier:"上海电气",investment_bn:114.0,approval_date:"2022-05-18",construction_start_date:"2023-01-10",completion_date:"2024-11-30",description:"江苏盐城大丰海域海上风电项目，采用上海电气 SE12.0-242 机组，已全容量并网。",is_verified:true,sources:[{source_name:"华润电力并网公告",source_url:"https://example.com/cr-power-js",captured_at:"2024-12-10T08:00:00Z"}]},
+  {id:12,name:"中节能甘肃酒泉 400MW 风电项目",province:{id:12,name:"甘肃",region:"西北"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:400,turbine_count:80,unit_capacity_mw:5.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"approved",name:"核准"},owner:"中节能",turbine_supplier:"明阳智能",investment_bn:28.0,approval_date:"2025-02-20",description:"甘肃酒泉千万千瓦级风电基地新批次项目，拟采用明阳智能陆上大容量机组。",is_verified:true,sources:[{source_name:"甘肃省能源局核准",source_url:"https://example.com/gs-jq-2025",captured_at:"2025-03-15T13:00:00Z"}]},
+  {id:13,name:"粤电集团广东湛江徐闻 400MW 海上风电项目",province:{id:2,name:"广东",region:"华南"},project_type:{code:"offshore",name:"海上风电"},capacity_mw:400,turbine_count:33,unit_capacity_mw:12.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"construction",name:"在建"},owner:"粤电集团",turbine_supplier:"明阳智能",investment_bn:76.0,approval_date:"2023-11-25",construction_start_date:"2024-08-01",planned_cod_date:"2026-09-30",description:"广东湛江徐闻海域，采用明阳智能 MySE12-242 机组，同步建设 220kV 海上升压站。",is_verified:true,sources:[{source_name:"粤电集团施工公告",source_url:"https://example.com/yd-gd-2024",captured_at:"2024-09-01T15:00:00Z"}]},
+  {id:14,name:"中电建云南曲靖 250MW 风电项目",province:{id:13,name:"云南",region:"西南"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:250,turbine_count:50,unit_capacity_mw:5.0,tower_type:{code:"hybrid",name:"混塔"},status:{code:"construction",name:"在建"},owner:"中国电建",turbine_supplier:"哈电风能",investment_bn:17.5,approval_date:"2024-04-08",construction_start_date:"2024-09-20",planned_cod_date:"2026-01-31",description:"云南曲靖市会泽县高原山地风电项目，采用混塔方案解决山地运输难题。",is_verified:true,sources:[{source_name:"云南省能源局核准",source_url:"https://example.com/yn-qj-2024",captured_at:"2024-10-15T10:00:00Z"}]},
+  {id:15,name:"中广核黑龙江大庆杜尔伯特 350MW 风电项目",province:{id:14,name:"黑龙江",region:"东北"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:350,turbine_count:70,unit_capacity_mw:5.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"completed",name:"完工"},owner:"中广核",turbine_supplier:"运达股份",investment_bn:24.5,approval_date:"2022-08-15",construction_start_date:"2023-05-01",completion_date:"2024-09-30",description:"黑龙江大庆杜尔伯特县，采用运达 WD200/5.0 机组，已全容量并网。",is_verified:true,sources:[{source_name:"中广核竣工公告",source_url:"https://example.com/cgn-hlj-done",captured_at:"2024-10-20T09:30:00Z"}]},
+  {id:16,name:"三峡发展湖南永州 200MW 风电项目",province:{id:15,name:"湖南",region:"华中"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:200,turbine_count:40,unit_capacity_mw:5.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"shelved",name:"搁置"},owner:"三峡发展",turbine_supplier:"待定",investment_bn:14.0,approval_date:"2023-02-10",description:"受林地审批影响暂时搁置，预计 2026 年重新启动。",is_verified:false,sources:[{source_name:"湖南省能源局公告",source_url:"https://example.com/hn-sx-2023",captured_at:"2024-06-01T16:00:00Z"}]},
+  {id:17,name:"国电投山西忻州 300MW 风电项目",province:{id:16,name:"山西",region:"华北"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:300,turbine_count:60,unit_capacity_mw:5.0,tower_type:{code:"hybrid",name:"混塔"},status:{code:"bidding",name:"招标"},owner:"国家电投",turbine_supplier:"待定",investment_bn:21.0,approval_date:"2024-12-01",description:"山西忻州市风电项目，正在进行 EPC 和风机设备招标。",is_verified:false,sources:[{source_name:"国家电投招标平台",source_url:"https://example.com/spic-sx-bid",captured_at:"2025-01-15T14:30:00Z"}]},
+  {id:18,name:"华能河南驻马店 250MW 风电项目",province:{id:17,name:"河南",region:"华中"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:250,turbine_count:50,unit_capacity_mw:5.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"grid_connected",name:"并网"},owner:"华能集团",turbine_supplier:"远景能源",investment_bn:17.5,approval_date:"2022-11-30",construction_start_date:"2023-07-15",completion_date:"2024-08-20",description:"河南驻马店市确山县，已并网发电，配套储能 50MW/100MWh。",is_verified:true,sources:[{source_name:"华能并网公告",source_url:"https://example.com/hn-zmd-grid",captured_at:"2024-09-05T10:00:00Z"}]},
+  {id:19,name:"华电四川凉山 350MW 风电项目",province:{id:18,name:"四川",region:"西南"},project_type:{code:"onshore",name:"陆上风电"},capacity_mw:350,turbine_count:70,unit_capacity_mw:5.0,tower_type:{code:"hybrid",name:"混塔"},status:{code:"construction",name:"在建"},owner:"华电集团",turbine_supplier:"东方风电",investment_bn:24.5,approval_date:"2024-06-15",construction_start_date:"2025-01-10",planned_cod_date:"2026-09-30",description:"四川凉山州喜德县高原风电项目，采用混塔方案，预计年发电 8 亿度。",is_verified:true,sources:[{source_name:"四川省能源局核准",source_url:"https://example.com/sc-ls-2024",captured_at:"2025-02-20T11:30:00Z"}]},
+  {id:20,name:"国能浙江台州温岭 500MW 海上风电项目",province:{id:9,name:"浙江",region:"华东"},project_type:{code:"offshore",name:"海上风电"},capacity_mw:500,turbine_count:42,unit_capacity_mw:12.0,tower_type:{code:"steel",name:"钢塔"},status:{code:"approved",name:"核准"},owner:"国家能源集团",turbine_supplier:"上海电气",investment_bn:95.0,approval_date:"2025-04-10",description:"浙江台州温岭近海风电项目，拟采用上海电气 12MW 机组，计划 2026 年开工。",is_verified:true,sources:[{source_name:"浙江省能源局批复",source_url:"https://example.com/zj-tz-2025",captured_at:"2025-05-01T08:00:00Z"}]},
+];
+
+// ====== 内存 API（模拟后端）======
+const ALL_DATA = SAMPLE_DATA;
+
+function api(path) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      // GET /v1/projects?page=&page_size=&...filters
+      const listMatch = path.match(/^\/v1\/projects\?(.+)$/);
+      if (listMatch) {
+        const params = new URLSearchParams(listMatch[1]);
+        let filtered = [...ALL_DATA];
+        // 筛选
+        const status = params.get('status');
+        const projectType = params.get('project_type');
+        const towerType = params.get('tower_type');
+        const provinceId = params.get('province_id');
+        const supplier = params.get('supplier');
+        const keyword = params.get('keyword');
+        if (status) filtered = filtered.filter(p => p.status.code === status);
+        if (projectType) filtered = filtered.filter(p => p.project_type.code === projectType);
+        if (towerType) filtered = filtered.filter(p => p.tower_type.code === towerType);
+        if (provinceId) filtered = filtered.filter(p => p.province.id === parseInt(provinceId));
+        if (supplier) filtered = filtered.filter(p => p.turbine_supplier === supplier);
+        if (keyword) {
+          const kw = keyword.toLowerCase();
+          filtered = filtered.filter(p => p.name.includes(kw) || (p.owner||'').includes(kw) || (p.turbine_supplier||'').includes(kw));
+        }
+        const page = parseInt(params.get('page')||'1');
+        const pageSize = parseInt(params.get('page_size')||'20');
+        const total = filtered.length;
+        const totalPages = Math.ceil(total / pageSize);
+        const start = (page-1) * pageSize;
+        const data = filtered.slice(start, start + pageSize);
+        return resolve({ code:0, message:"success", data, pagination:{ page, page_size:pageSize, total, total_pages:totalPages } });
+      }
+      // GET /v1/projects/:id
+      const detailMatch = path.match(/^\/v1\/projects\/(\d+)$/);
+      if (detailMatch) {
+        const id = parseInt(detailMatch[1]);
+        const p = ALL_DATA.find(p => p.id === id);
+        return resolve({ code:0, message:"success", data: p || null });
+      }
+      // GET /v1/stats/overview
+      if (path === '/v1/stats/overview') {
+        const byStatus = {};
+        const byType = {};
+        const byTower = {};
+        let totalCap = 0, totalTurbines = 0;
+        ALL_DATA.forEach(p => {
+          totalCap += p.capacity_mw;
+          totalTurbines += p.turbine_count||0;
+          const s = p.status.code;
+          const t = p.project_type.code;
+          const tw = p.tower_type.code;
+          if (!byStatus[s]) byStatus[s] = {count:0,capacity_mw:0};
+          byStatus[s].count++; byStatus[s].capacity_mw += p.capacity_mw;
+          if (!byType[t]) byType[t] = {count:0,capacity_mw:0};
+          byType[t].count++; byType[t].capacity_mw += p.capacity_mw;
+          if (!byTower[tw]) byTower[tw] = {count:0,capacity_mw:0};
+          byTower[tw].count++; byTower[tw].capacity_mw += p.capacity_mw;
+        });
+        return resolve({ code:0, message:"success", data: {
+          total_projects: ALL_DATA.length, total_capacity_mw: totalCap, total_turbines: totalTurbines,
+          by_status: byStatus, by_type: byType, by_tower_type: byTower,
+          this_year: { new_approved_mw: 1950, new_construction_mw: 3500, new_completed_mw: 2300 }
+        }});
+      }
+      // GET /v1/stats/by-province
+      if (path === '/v1/stats/by-province') {
+        const map = {};
+        ALL_DATA.forEach(p => {
+          const pid = p.province.id;
+          if (!map[pid]) map[pid] = {province_id:pid,province_name:p.province.name,province_region:p.province.region,project_count:0,total_capacity_mw:0,total_turbines:0,onshore_mw:0,offshore_mw:0};
+          map[pid].project_count++;
+          map[pid].total_capacity_mw += p.capacity_mw;
+          map[pid].total_turbines += p.turbine_count||0;
+          if (p.project_type.code==='offshore') map[pid].offshore_mw += p.capacity_mw;
+          else map[pid].onshore_mw += p.capacity_mw;
+        });
+        return resolve({ code:0, message:"success", data: Object.values(map).sort((a,b) => b.total_capacity_mw - a.total_capacity_mw) });
+      }
+      // GET /v1/stats/supplier-ranking
+      if (path === '/v1/stats/supplier-ranking') {
+        const map = {};
+        ALL_DATA.forEach(p => {
+          const s = p.turbine_supplier;
+          if (!s || s==='待定') return;
+          if (!map[s]) map[s] = {supplier:s,project_count:0,total_capacity_mw:0,total_turbines:0};
+          map[s].project_count++;
+          map[s].total_capacity_mw += p.capacity_mw;
+          map[s].total_turbines += p.turbine_count||0;
+        });
+        return resolve({ code:0, message:"success", data: Object.values(map).sort((a,b) => b.total_capacity_mw - a.total_capacity_mw) });
+      }
+      return resolve({ code:0, message:"success", data: null });
+    }, 100); // 模拟网络延迟
+  });
+}
+
+// ====== 工具函数 ======
+function fmtCap(mw) {
+  if (!mw) return '--';
+  return mw >= 1000 ? (mw/1000).toFixed(1) + ' GW' : mw + ' MW';
+}
+function fmtDate(d) {
+  return d ? d.slice(0,7) : '';
+}
+
+// ====== 页面状态 ======
+let currentPage = 1, projects = [], hasMore = true, loading = false, filters = {};
+
+const FILTER_LABELS = {
+  status: { approved:'核准', bidding:'招标', construction:'在建', grid_connected:'并网', completed:'完工', planned:'规划', shelved:'搁置', cancelled:'取消' },
+  project_type: { onshore:'陆上风电', offshore:'海上风电' },
+  tower_type: { steel:'钢塔', hybrid:'混塔' },
+};
+
+function getFilterLabel(key, value) {
+  if (key === 'province_id') return '省份ID:'+value;
+  if (key === 'supplier') return value;
+  if (key === 'keyword') return '搜索:'+value;
+  if (FILTER_LABELS[key] && FILTER_LABELS[key][value]) return FILTER_LABELS[key][value];
+  return value;
+}
+
+function activeFilterCount() { return Object.keys(filters).length; }
+
+// ====== 页面切换 ======
+function showPage(name, param) {
+  document.querySelectorAll('header nav button').forEach(b => {
+    b.className = 'px-4 py-2 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10';
+  });
+  if (name === 'home') document.getElementById('nav-home').className = 'px-4 py-2 rounded-lg text-sm font-medium bg-white/20';
+  if (name === 'dashboard') document.getElementById('nav-dashboard').className = 'px-4 py-2 rounded-lg text-sm font-medium bg-white/20';
+  const app = document.getElementById('app');
+  if (name === 'home') renderHome(app);
+  if (name === 'detail') renderDetail(app, param);
+  if (name === 'dashboard') renderDashboard(app);
+  window.scrollTo(0,0);
+}
+
+// ====== 首页 ======
+async function renderHome(el) {
+  const hasFilters = activeFilterCount() > 0;
+  const filterChips = Object.entries(filters).map(([k,v]) =>
+    `<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800"><span>${getFilterLabel(k,v)}</span><button onclick="event.stopPropagation();delete filters['${k}'];showPage('home')" class="ml-0.5 w-4 h-4 flex items-center justify-center rounded-full hover:bg-primary-200">&times;</button></span>`
+  ).join('');
+
+  el.innerHTML = `
+    <div class="bg-white px-4 py-3 border-b border-gray-100">
+      <div onclick="showSearch()" class="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2.5 text-gray-400 cursor-pointer">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <span class="text-sm">搜索项目名称、业主、供应商...</span>
+      </div>
+    </div>
+    ${hasFilters ? `
+    <div class="bg-primary-50 px-4 py-2.5 border-b border-primary-100">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-xs text-primary-600 font-medium shrink-0">筛选:</span>
+        ${filterChips}
+        <button onclick="clearAllFilters()" class="shrink-0 text-xs text-gray-500 hover:text-red-500 ml-auto">清除全部</button>
+      </div>
+    </div>` : ''}
+    <div class="bg-white border-b border-gray-100">
+      <div class="flex items-center gap-2 px-4 py-3 overflow-x-auto scrollbar-hide" id="quick-filters">
+        ${['核准','招标','在建','海上风电','陆上风电','混塔'].map((label,i) => {
+          const map = [['status','approved'],['status','bidding'],['status','construction'],['project_type','offshore'],['project_type','onshore'],['tower_type','hybrid']];
+          const [k,v] = map[i];
+          return `<button onclick="toggleFilter('${k}','${v}')" class="shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${filters[k]===v?'bg-primary-800 text-white':'bg-gray-100 text-gray-600'}">${label}</button>`;
+        }).join('')}
+      </div>
+    </div>
+    <div id="list-stats" class="px-4 py-2 text-xs text-gray-400"></div>
+    <div class="px-4 pb-8" id="project-list"></div>
+  `;
+  await loadProjects(true);
+}
+
+function toggleFilter(key, value) {
+  if (filters[key] === value) delete filters[key];
+  else filters[key] = value;
+  showPage('home');
+}
+
+async function loadProjects(reset) {
+  if (loading) return;
+  const page = reset ? 1 : currentPage;
+  if (!reset && !hasMore) return;
+  loading = true;
+  const params = new URLSearchParams({ page, page_size:'20', ...filters });
+  const res = await api('/v1/projects?' + params.toString());
+  const list = res.data || [];
+  const pg = res.pagination || {};
+  if (reset) projects = list;
+  else projects = [...projects, ...list];
+  currentPage = page;
+  hasMore = page < (pg.total_pages || 0);
+  loading = false;
+  document.getElementById('list-stats').textContent = pg.total ? '共 ' + pg.total + ' 个项目' : '';
+  renderProjectList();
+}
+
+function renderProjectList() {
+  const el = document.getElementById('project-list');
+  if (!el) return;
+  const statusNames = { planned:'规划', approved:'核准', bidding:'招标', construction:'在建', grid_connected:'并网', completed:'完工', shelved:'搁置', cancelled:'取消' };
+  el.innerHTML = projects.map(p => {
+    const typeColor = p.project_type?.code === 'offshore' ? 'bg-sky-100 text-sky-700' : 'bg-green-100 text-green-700';
+    const towerName = p.tower_type?.code === 'steel' ? '钢塔' : p.tower_type?.code === 'hybrid' ? '混塔' : '待确认';
+    return `
+    <div onclick="showPage('detail',${p.id})" class="block bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow mb-4 cursor-pointer">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="status-${p.status?.code} px-3 py-1 rounded-lg text-xs font-semibold">${statusNames[p.status?.code]||p.status?.code}</span>
+        <span class="px-3 py-1 rounded-full text-xs font-medium ${typeColor}">${p.project_type?.code==='offshore'?'海上':'陆上'}</span>
+        ${p.is_verified?'<span class="ml-auto text-green-600 text-xs font-medium">✓ 已核实</span>':''}
+      </div>
+      <h3 class="text-lg font-bold text-gray-900 leading-snug mb-1 line-clamp-2">${p.name}</h3>
+      <p class="text-sm text-gray-400 mb-4">${p.owner||''} ${p.province?.name?'· '+p.province.name:''}</p>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="bg-green-50 rounded-xl p-3"><p class="text-xs text-green-600 mb-1">装机容量</p><p class="text-xl font-bold text-green-800">${fmtCap(p.capacity_mw)}</p></div>
+        <div class="bg-gray-50 rounded-xl p-3"><p class="text-xs text-gray-500 mb-1">风机台数</p><p class="text-lg font-bold text-gray-800">${p.turbine_count||'--'}<span class="text-sm font-normal text-gray-500 ml-0.5">台</span></p></div>
+        <div class="bg-gray-50 rounded-xl p-3"><p class="text-xs text-gray-500 mb-1">单机容量</p><p class="text-lg font-bold text-gray-800">${p.unit_capacity_mw||'--'}<span class="text-sm font-normal text-gray-500 ml-0.5">MW</span></p></div>
+        <div class="bg-gray-50 rounded-xl p-3"><p class="text-xs text-gray-500 mb-1">塔筒构造</p><p class="text-lg font-bold text-gray-800">${towerName}</p></div>
+      </div>
+      <div class="flex items-center gap-3 text-sm text-gray-500 pt-3 border-t border-gray-100">
+        ${p.turbine_supplier?`<span>${p.turbine_supplier}</span>`:''}
+        ${p.investment_bn?`<span class="text-orange-600 font-semibold">${p.investment_bn}亿元</span>`:''}
+        <span class="ml-auto text-xs text-gray-400">${p.approval_date?'核准 '+fmtDate(p.approval_date):''}</span>
+      </div>
+    </div>`;
+  }).join('') + (hasMore?'<div class="text-center py-4"><button onclick="loadMore()" class="text-sm text-gray-500">加载更多</button></div>':'') + (!hasMore&&projects.length>0?'<div class="text-center py-4 text-sm text-gray-400">— 已加载全部 —</div>':'') + (!loading&&projects.length===0?'<div class="flex flex-col items-center py-20 text-gray-400"><span class="text-4xl mb-3">📭</span><p class="text-lg">暂无匹配的项目</p></div>':'');
+}
+
+function loadMore() { loadProjects(false); }
+
+function showSearch() {
+  const kw = prompt('请输入搜索关键词：');
+  if (kw) { filters = { keyword: kw }; showPage('home'); }
+}
+
+// ====== 详情页 ======
+async function renderDetail(el, id) {
+  el.innerHTML = '<div class="flex justify-center py-20 text-gray-400"><div class="animate-spin h-6 w-6 border-2 border-primary-600 border-t-transparent rounded-full"></div></div>';
+  const res = await api('/v1/projects/' + id);
+  const p = res.data;
+  const towerName = p.tower_type?.code === 'steel' ? '钢塔' : p.tower_type?.code === 'hybrid' ? '混塔' : '待确认';
+  el.innerHTML = `
+    <div class="bg-white px-4 py-3 border-b border-gray-100">
+      <button onclick="showPage('home')" class="flex items-center gap-1 text-sm text-gray-500">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>返回列表</span>
+      </button>
+    </div>
+    <div class="bg-white px-5 py-6">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="status-${p.status?.code} px-3 py-1 rounded-lg text-xs font-semibold">${p.status?.name}</span>
+        ${p.project_type?.code==='offshore'?'<span class="px-3 py-1 rounded-full text-xs bg-sky-100 text-sky-700 font-medium">海上风电</span>':'<span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-700 font-medium">陆上风电</span>'}
+      </div>
+      <h1 class="text-xl font-bold text-gray-900 leading-snug mb-2">${p.name}</h1>
+      ${p.province?`<p class="flex items-center gap-1 text-sm text-gray-400">📍 ${p.province.name} · ${p.province.region}</p>`:''}
+    </div>
+    <div class="bg-white px-5 py-5 mt-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-green-50 rounded-xl p-4"><p class="text-xs text-green-600 mb-1">装机容量</p><p class="text-2xl font-bold text-green-800">${fmtCap(p.capacity_mw)}</p></div>
+        <div class="bg-gray-50 rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">风机台数</p><p class="text-xl font-bold text-gray-800">${p.turbine_count||'--'}<span class="text-sm font-normal text-gray-500 ml-1">台</span></p></div>
+        <div class="bg-gray-50 rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">单机容量</p><p class="text-xl font-bold text-gray-800">${p.unit_capacity_mw||'--'}<span class="text-sm font-normal text-gray-500 ml-1">MW</span></p></div>
+        <div class="bg-gray-50 rounded-xl p-4"><p class="text-xs text-gray-500 mb-1">塔筒构造</p><p class="text-xl font-bold text-gray-800">${towerName}</p></div>
+      </div>
+    </div>
+    <div class="bg-white px-5 py-5 mt-3">
+      <h2 class="text-base font-bold text-gray-900 pb-3 border-b border-gray-100 mb-3">📋 项目信息</h2>
+      ${p.owner?`<div class="flex py-3 border-b border-gray-50"><span class="w-28 text-sm text-gray-400 shrink-0">业主/开发商</span><span class="text-sm text-gray-800 font-medium">${p.owner}</span></div>`:''}
+      ${p.turbine_supplier?`<div class="flex py-3 border-b border-gray-50"><span class="w-28 text-sm text-gray-400 shrink-0">风机供应商</span><span class="text-sm text-gray-800 font-medium">${p.turbine_supplier}</span></div>`:''}
+      ${p.investment_bn?`<div class="flex py-3 border-b border-gray-50"><span class="w-28 text-sm text-gray-400 shrink-0">投资金额</span><span class="text-sm text-orange-600 font-bold">${p.investment_bn} 亿元</span></div>`:''}
+      ${p.description?`<div class="flex py-3"><span class="w-28 text-sm text-gray-400 shrink-0">项目描述</span><span class="text-sm text-gray-600 leading-relaxed">${p.description}</span></div>`:''}
+    </div>
+    ${(p.approval_date||p.construction_start_date||p.planned_cod_date||p.completion_date)?`
+    <div class="bg-white px-5 py-5 mt-3">
+      <h2 class="text-base font-bold text-gray-900 pb-3 border-b border-gray-100 mb-3">📅 关键节点</h2>
+      <div class="space-y-4">
+        ${p.approval_date?`<div class="flex items-start gap-3"><div class="w-3 h-3 rounded-full bg-gray-300 mt-1.5 shrink-0"></div><div><p class="text-sm font-semibold text-gray-800">核准批复</p><p class="text-xs text-gray-400 mt-0.5">${p.approval_date}</p></div></div>`:''}
+        ${p.construction_start_date?`<div class="flex items-start gap-3"><div class="w-3 h-3 rounded-full bg-gray-300 mt-1.5 shrink-0"></div><div><p class="text-sm font-semibold text-gray-800">主体开工</p><p class="text-xs text-gray-400 mt-0.5">${p.construction_start_date}</p></div></div>`:''}
+        ${p.planned_cod_date?`<div class="flex items-start gap-3"><div class="w-3 h-3 rounded-full bg-blue-400 mt-1.5 shrink-0"></div><div><p class="text-sm font-semibold text-gray-800">计划并网</p><p class="text-xs text-blue-500 mt-0.5">${p.planned_cod_date}</p></div></div>`:''}
+        ${p.completion_date?`<div class="flex items-start gap-3"><div class="w-3 h-3 rounded-full bg-green-500 mt-1.5 shrink-0"></div><div><p class="text-sm font-semibold text-gray-800">完工/全容量并网</p><p class="text-xs text-green-600 mt-0.5">${p.completion_date}</p></div></div>`:''}
+      </div>
+    </div>`:''}
+    ${p.sources?.length?`
+    <div class="bg-orange-50 px-5 py-5 mt-3">
+      <h2 class="text-base font-bold text-gray-900 pb-3 border-b border-orange-100 mb-2">📡 信息来源</h2>
+      <p class="text-xs text-gray-400 mb-3">以下为本项目信息的数据采集来源</p>
+      <div class="space-y-2">
+        ${p.sources.map(s=>`
+        <div class="bg-white rounded-lg p-3 border border-orange-200">
+          <p class="text-sm font-semibold text-gray-800">${s.source_name}</p>
+          ${s.source_url?`<p class="text-xs text-blue-500 mt-1 break-all">${s.source_url}</p>`:''}
+          ${s.captured_at?`<p class="text-xs text-gray-400 mt-1">采集于 ${s.captured_at.slice(0,10)}</p>`:''}
+        </div>`).join('')}
+      </div>
+    </div>`:''}
+    <div style="height:40px"></div>
+  `;
+}
+
+function filterFromDashboard(filterObj) { filters = filterObj; showPage('home'); }
+
+// ====== 看板 ======
+async function renderDashboard(el) {
+  el.innerHTML = '<div class="flex justify-center py-20 text-gray-400"><div class="animate-spin h-6 w-6 border-2 border-primary-600 border-t-transparent rounded-full"></div></div>';
+  const [ov, pr, su] = await Promise.all([api('/v1/stats/overview'), api('/v1/stats/by-province'), api('/v1/stats/supplier-ranking')]);
+  const data = ov.data || {};
+  const provinces = (pr.data||[]).slice(0,10);
+  const suppliers = (su.data||[]).slice(0,10);
+  const byStatus = data.by_status || {};
+
+  el.innerHTML = `
+    <div class="px-4 py-4 pb-10 space-y-4">
+      <div class="grid grid-cols-3 gap-3">
+        <div class="bg-white rounded-xl p-4 shadow-sm"><p class="text-2xl font-bold text-primary-800">${data.total_projects||0}</p><p class="text-xs text-gray-400 mt-1">项目总数</p></div>
+        <div class="bg-white rounded-xl p-4 shadow-sm"><p class="text-2xl font-bold text-blue-600">${fmtCap(data.total_capacity_mw)}</p><p class="text-xs text-gray-400 mt-1">总装机容量</p></div>
+        <div class="bg-white rounded-xl p-4 shadow-sm"><p class="text-2xl font-bold text-sky-600">${data.total_turbines||0}</p><p class="text-xs text-gray-400 mt-1">风机总台数</p></div>
+      </div>
+      <div class="bg-white rounded-xl p-5 shadow-sm">
+        <h3 class="text-sm font-bold text-gray-900 pb-3 border-b border-gray-100 mb-3">📊 项目状态分布 <span class="text-xs font-normal text-gray-400 ml-1">— 点击筛选</span></h3>
+        <div class="space-y-2">
+          ${['approved','bidding','construction','grid_connected','completed'].map(code=>{
+            const name={approved:'核准',bidding:'招标',construction:'在建',grid_connected:'并网',completed:'完工'}[code];
+            const d=byStatus[code]||{count:0,capacity_mw:0};
+            const totalCap=data.total_capacity_mw||1;
+            const pct=totalCap>0?(d.capacity_mw/totalCap*100).toFixed(0):0;
+            return `<div onclick="filterFromDashboard({status:'${code}'})" class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"><span class="w-12 text-sm text-gray-600 shrink-0">${name}</span><div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full status-${code}" style="width:${pct}%;opacity:0.7"></div></div><span class="w-20 text-right text-sm text-gray-500 shrink-0">${fmtCap(d.capacity_mw)}</span><span class="text-xs text-gray-300 ml-1">${d.count||0}个</span></div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-5 shadow-sm">
+        <h3 class="text-sm font-bold text-gray-900 pb-3 border-b border-gray-100 mb-3">🗺️ 省份装机 Top 10 <span class="text-xs font-normal text-gray-400 ml-1">— 点击筛选</span></h3>
+        <div class="space-y-2">
+          ${provinces.map((p,i)=>`<div onclick="filterFromDashboard({province_id:'${p.province_id}'})" class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"><span class="w-6 text-sm font-bold text-gray-400 shrink-0">${i+1}</span><span class="flex-1 text-sm text-gray-700">${p.province_name}</span><span class="text-sm font-bold text-primary-700 shrink-0">${fmtCap(p.total_capacity_mw)}</span></div>`).join('')}
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-5 shadow-sm">
+        <h3 class="text-sm font-bold text-gray-900 pb-3 border-b border-gray-100 mb-3">🏭 供应商排名 <span class="text-xs font-normal text-gray-400 ml-1">— 点击筛选</span></h3>
+        <div class="space-y-3">
+          ${suppliers.map((s,i)=>`<div onclick="filterFromDashboard({supplier:'${s.supplier.replace(/'/g,"\\'")}'})" class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"><span class="w-6 text-sm font-bold text-gray-400 shrink-0">${i+1}</span><div class="flex-1 min-w-0"><p class="text-sm font-medium text-gray-800 truncate">${s.supplier}</p><p class="text-xs text-gray-400">${s.project_count}个项目 · ${s.total_turbines}台风机</p></div><span class="text-sm font-bold text-primary-700 shrink-0">${fmtCap(s.total_capacity_mw)}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function clearAllFilters() { filters = {}; showPage('home'); }
+
+// ====== 启动 ======
+showPage('home');
+</script>
+</body>
+</html>
