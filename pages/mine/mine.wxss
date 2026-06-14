@@ -1,0 +1,45 @@
+.mine-header {
+  padding-top: 48rpx;
+  padding-bottom: 48rpx;
+}
+
+.avatar {
+  font-size: 80rpx;
+  width: 120rpx;
+  height: 120rpx;
+  line-height: 120rpx;
+  background: var(--green-50);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+/* 关注标签 */
+.sub-tag {
+  display: inline-block;
+  padding: 8rpx 20rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  background: var(--gray-100);
+  color: var(--gray-700);
+}
+
+.sub-tag.active {
+  background: var(--green-50);
+  color: var(--green-800);
+  border: 1rpx solid var(--green-500);
+}
+
+.capacity-input {
+  width: 200rpx;
+  height: 64rpx;
+  border: 1rpx solid var(--gray-300);
+  border-radius: 8rpx;
+  padding: 0 16rpx;
+  font-size: 28rpx;
+}

@@ -1,0 +1,126 @@
+<wxs module="fmt">
+  var statusMap = {
+    planned:'规划',approved:'核准',bidding:'招标',construction:'在建',
+    grid_connected:'并网',completed:'完工',shelved:'搁置',cancelled:'取消'
+  };
+  module.exports.statusName = function(c){return statusMap[c]||c||''};
+  module.exports.fmtDate = function(d){return d?d.slice(0,10):''};
+  module.exports.fmtCapacity = function(m){return m>=1000?(m/1000).toFixed(1)+' GW':m+' MW'};
+  module.exports.fmtMoney = function(bn){return bn?bn+'亿元':''};
+</wxs>
+
+<view wx:if="{{loading}}" class="loading flex-col text-center">
+  <text>加载中...</text>
+</view>
+
+<block wx:if="{{!loading && project}}">
+  <!-- 头部信息 -->
+  <view class="detail-header card">
+    <view class="flex-row gap-8 mb-16">
+      <text class="tag status-{{project.status.code}}">{{fmt.statusName(project.status.code)}}</text>
+      <text class="tag tag-sky" wx:if="{{project.project_type.code === 'offshore'}}">海上风电</text>
+      <text class="tag tag-green" wx:if="{{project.project_type.code === 'onshore'}}">陆上风电</text>
+      <text class="flex-1"></text>
+      <text class="text-sm text-gray">{{project.province.name}} · {{project.province.region}}</text>
+    </view>
+
+    <view class="flex-row gap-12">
+      <text class="text-xl font-bold flex-1">{{project.name}}</text>
+      <text class="text-sm text-gray" bindtap="onCopyName">📋</text>
+    </view>
+  </view>
+
+  <!-- 核心指标 -->
+  <view class="metrics-grid">
+    <view class="metric-box">
+      <text class="metric-num text-green">{{fmt.fmtCapacity(project.capacity_mw)}}</text>
+      <text class="metric-title">装机容量</text>
+    </view>
+    <view class="metric-box">
+      <text class="metric-num">{{project.turbine_count || '-'}}台</text>
+      <text class="metric-title">风机台数</text>
+    </view>
+    <view class="metric-box">
+      <text class="metric-num">{{project.unit_capacity_mw || '-'}}MW</text>
+      <text class="metric-title">单机容量</text>
+    </view>
+    <view class="metric-box">
+      <text class="metric-num">{{project.tower_type.code === 'steel' ? '钢塔' : project.tower_type.code === 'hybrid' ? '混塔' : '待确认'}}</text>
+      <text class="metric-title">塔筒构造</text>
+    </view>
+  </view>
+
+  <!-- 详细信息 -->
+  <view class="card detail-section">
+    <view class="section-title">项目信息</view>
+    <view class="info-row" wx:if="{{project.owner}}">
+      <text class="info-label">业主</text>
+      <text class="info-value">{{project.owner}}</text>
+    </view>
+    <view class="info-row" wx:if="{{project.turbine_supplier}}">
+      <text class="info-label">风机供应商</text>
+      <text class="info-value">{{project.turbine_supplier}}</text>
+    </view>
+    <view class="info-row" wx:if="{{project.investment_bn}}">
+      <text class="info-label">投资金额</text>
+      <text class="info-value text-orange font-bold">{{fmt.fmtMoney(project.investment_bn)}}</text>
+    </view>
+    <view class="info-row" wx:if="{{project.description}}">
+      <text class="info-label">项目描述</text>
+      <text class="info-value">{{project.description}}</text>
+    </view>
+  </view>
+
+  <!-- 关键日期 -->
+  <view class="card detail-section" wx:if="{{project.approval_date || project.bid_date || project.construction_start_date || project.planned_cod_date || project.completion_date}}">
+    <view class="section-title">关键节点</view>
+    <view class="info-row" wx:if="{{project.approval_date}}">
+      <text class="info-label">核准日期</text>
+      <text class="info-value">{{fmt.fmtDate(project.approval_date)}}</text>
+    </view>
+    <view class="info-row" wx:if="{{project.bid_date}}">
+      <text class="info-label">招标日期</text>
+      <text class="info-value">{{fmt.fmtDate(project.bid_date)}}</text>
+    </view>
+    <view class="info-row" wx:if="{{project.construction_start_date}}">
+      <text class="info-label">开工日期</text>
+      <text class="info-value">{{fmt.fmtDate(project.construction_start_date)}}</text>
+    </view>
+    <view class="info-row" wx:if="{{project.planned_cod_date}}">
+      <text class="info-label">计划并网</text>
+      <text class="info-value text-blue">{{fmt.fmtDate(project.planned_cod_date)}}</text>
+    </view>
+    <view class="info-row" wx:if="{{project.completion_date}}">
+      <text class="info-label">完工日期</text>
+      <text class="info-value text-green">{{fmt.fmtDate(project.completion_date)}}</text>
+    </view>
+  </view>
+
+  <!-- 状态时间线 -->
+  <view class="card detail-section" wx:if="{{statusHistory.length > 0}}">
+    <view class="section-title">状态变更记录</view>
+    <view class="timeline">
+      <view class="timeline-item" wx:for="{{statusHistory}}" wx:key="index">
+        <view class="timeline-dot {{item === statusHistory[0] ? 'active' : ''}}"></view>
+        <view class="timeline-content">
+          <text class="timeline-action">
+            {{item.from_status ? item.from_status + ' → ' : ''}}{{item.to_status}}
+          </text>
+          <text class="timeline-date text-sm text-gray">{{fmt.fmtDate(item.changed_at)}}</text>
+          <text class="timeline-remark text-sm text-gray" wx:if="{{item.remark}}">{{item.remark}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 信息来源 -->
+  <view class="card detail-section" wx:if="{{sources.length > 0}}">
+    <view class="section-title">信息来源</view>
+    <view class="source-item flex-row gap-12" wx:for="{{sources}}" wx:key="index" bindtap="onOpenSource" data-url="{{item.source_url}}">
+      <text class="flex-1 text-sm">{{item.source_name}}</text>
+      <text class="text-xs text-gray">{{fmt.fmtDate(item.captured_at)}}</text>
+    </view>
+  </view>
+
+  <view style="height:40rpx"></view>
+</block>

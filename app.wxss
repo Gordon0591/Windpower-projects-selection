@@ -1,0 +1,109 @@
+/* 全局样式变量 */
+page {
+  --green-900: #14532d;
+  --green-800: #166534;
+  --green-700: #15803d;
+  --green-600: #16a34a;
+  --green-500: #22c55e;
+  --green-100: #dcfce7;
+  --green-50: #f0fdf4;
+  --blue-600: #2563eb;
+  --blue-100: #dbeafe;
+  --sky-600: #0284c7;
+  --sky-100: #e0f2fe;
+  --orange-600: #ea580c;
+  --orange-100: #fff7ed;
+  --gray-900: #111827;
+  --gray-700: #374151;
+  --gray-500: #6b7280;
+  --gray-400: #9ca3af;
+  --gray-300: #d1d5db;
+  --gray-200: #e5e7eb;
+  --gray-100: #f3f4f6;
+  --gray-50: #f9fafb;
+  --white: #ffffff;
+  --red-500: #ef4444;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 28rpx;
+  color: var(--gray-900);
+  background: var(--gray-100);
+  box-sizing: border-box;
+}
+
+/* 通用工具类 */
+.flex-row { display: flex; flex-direction: row; align-items: center; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-1 { flex: 1; }
+.flex-wrap { flex-wrap: wrap; }
+.gap-8 { gap: 8rpx; }
+.gap-12 { gap: 12rpx; }
+.gap-16 { gap: 16rpx; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-sm { font-size: 24rpx; }
+.text-xs { font-size: 20rpx; }
+.text-lg { font-size: 32rpx; }
+.text-xl { font-size: 36rpx; }
+.text-2xl { font-size: 44rpx; }
+.font-bold { font-weight: 700; }
+.font-medium { font-weight: 500; }
+.text-gray { color: var(--gray-500); }
+.text-green { color: var(--green-700); }
+.text-blue { color: var(--blue-600); }
+.text-sky { color: var(--sky-600); }
+.text-orange { color: var(--orange-600); }
+.text-red { color: var(--red-500); }
+.text-white { color: var(--white); }
+.bg-white { background: var(--white); }
+.bg-green-50 { background: var(--green-50); }
+.rounded-8 { border-radius: 8rpx; }
+.rounded-12 { border-radius: 12rpx; }
+.rounded-16 { border-radius: 16rpx; }
+.p-16 { padding: 16rpx; }
+.p-24 { padding: 24rpx; }
+.px-24 { padding-left: 24rpx; padding-right: 24rpx; }
+.py-16 { padding-top: 16rpx; padding-bottom: 16rpx; }
+.mb-16 { margin-bottom: 16rpx; }
+.mb-24 { margin-bottom: 24rpx; }
+.mt-16 { margin-top: 16rpx; }
+
+/* 标签 */
+.tag {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  border-radius: 6rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+.tag-green  { background: var(--green-100);  color: var(--green-700); }
+.tag-blue   { background: var(--blue-100);   color: var(--blue-600); }
+.tag-sky    { background: var(--sky-100);    color: var(--sky-600); }
+.tag-orange { background: var(--orange-100); color: var(--orange-600); }
+
+/* 状态标签（生命周期颜色） */
+.status-planned        { background: #f3f4f6; color: #6b7280; }
+.status-approved       { background: #fef3c7; color: #d97706; }
+.status-bidding        { background: #dbeafe; color: #2563eb; }
+.status-construction   { background: #fce7f3; color: #db2777; }
+.status-grid_connected { background: #d1fae5; color: #059669; }
+.status-completed      { background: #dcfce7; color: #16a34a; }
+.status-shelved        { background: #fee2e2; color: #dc2626; }
+.status-cancelled      { background: #f3f4f6; color: #9ca3af; }
+
+/* 卡片 */
+.card {
+  background: var(--white);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: var(--shadow);
+}
+
+/* 分隔线 */
+.divider {
+  height: 1rpx;
+  background: var(--gray-200);
+  margin: 16rpx 0;
+}

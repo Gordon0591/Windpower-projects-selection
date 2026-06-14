@@ -1,0 +1,18 @@
+.stat-card {
+  min-width: 200rpx;
+  box-shadow: var(--shadow);
+}
+
+.stat-value {
+  line-height: 1.2;
+}
+
+.stat-unit {
+  font-size: 24rpx;
+  margin-left: 4rpx;
+  display: inline;
+}
+
+.stat-label {
+  margin-top: 8rpx;
+}

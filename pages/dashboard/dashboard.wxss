@@ -1,0 +1,41 @@
+.overview-cards {
+  /* stat-card handles its own styling */
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--gray-900);
+  padding-bottom: 12rpx;
+  border-bottom: 1rpx solid var(--gray-200);
+}
+
+/* 状态分布条 */
+.status-bar-item {
+  margin-bottom: 12rpx;
+  width: 100%;
+}
+
+.bar-bg {
+  height: 24rpx;
+  background: var(--gray-100);
+  border-radius: 4rpx;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 4rpx;
+  transition: width 0.5s;
+}
+
+/* 排名列表 */
+.province-item, .supplier-item {
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid var(--gray-100);
+  align-items: center;
+}
+
+.province-item:last-child, .supplier-item:last-child {
+  border-bottom: none;
+}

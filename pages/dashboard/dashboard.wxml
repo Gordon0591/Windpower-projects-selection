@@ -1,0 +1,104 @@
+<wxs module="fmt">
+  module.exports.fmtGW = function(mw) {
+    if (!mw) return '0 GW';
+    return mw >= 1000 ? (mw / 1000).toFixed(1) + ' GW' : mw.toFixed(0) + ' MW';
+  };
+  module.exports.fmtPct = function(pct) {
+    return pct ? pct.toFixed(1) + '%' : '0%';
+  };
+  module.exports.maxWidth = function(val, max) {
+    if (!max || max === 0) return '0%';
+    return (val / max * 100).toFixed(0) + '%';
+  };
+</wxs>
+
+<view wx:if="{{loading}}" class="loading text-center py-16">加载中...</view>
+
+<block wx:if="{{!loading && overview}}">
+  <!-- 总览卡片 -->
+  <view class="overview-cards flex-row gap-16 p-24 flex-wrap">
+    <stat-card label="项目总数" value="{{overview.total_projects}}" unit="个" color="green" />
+    <stat-card label="总装机容量" value="{{fmt.fmtGW(overview.total_capacity_mw)}}" unit="" color="blue" />
+    <stat-card label="风机总台数" value="{{overview.total_turbines}}" unit="台" color="sky" />
+  </view>
+
+  <!-- 今年新增 -->
+  <view class="card" style="margin:0 24rpx 16rpx">
+    <view class="section-title">📅 今年新增容量</view>
+    <view class="flex-row gap-16 mt-16">
+      <view class="flex-1 text-center">
+        <text class="text-2xl font-bold text-green block">{{fmt.fmtGW(overview.this_year.new_approved_mw)}}</text>
+        <text class="text-xs text-gray">核准</text>
+      </view>
+      <view class="flex-1 text-center">
+        <text class="text-2xl font-bold text-blue block">{{fmt.fmtGW(overview.this_year.new_construction_mw)}}</text>
+        <text class="text-xs text-gray">新开工</text>
+      </view>
+      <view class="flex-1 text-center">
+        <text class="text-2xl font-bold text-sky block">{{fmt.fmtGW(overview.this_year.new_completed_mw)}}</text>
+        <text class="text-xs text-gray">完工</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 状态分布 -->
+  <view class="card" style="margin:0 24rpx 16rpx">
+    <view class="section-title">📊 项目状态分布</view>
+    <view class="flex-row gap-8 flex-wrap mt-16">
+      <view class="status-bar-item" wx:for="{{['approved','bidding','construction','grid_connected','completed']}}" wx:key="*this" wx:for-item="s">
+        <view class="flex-row gap-8">
+          <text class="text-sm" style="width:80rpx">{{s === 'approved' ? '核准' : s === 'bidding' ? '招标' : s === 'construction' ? '在建' : s === 'grid_connected' ? '并网' : '完工'}}</text>
+          <view class="bar-bg flex-1">
+            <view class="bar-fill status-{{s}}" style="width:{{fmt.maxWidth(overview.by_status[s] ? overview.by_status[s].capacity_mw : 0, overview.total_capacity_mw)}}"></view>
+          </view>
+          <text class="text-sm text-gray" style="width:100rpx">{{fmt.fmtGW(overview.by_status[s] ? overview.by_status[s].capacity_mw : 0)}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 塔筒构造 -->
+  <view class="card" style="margin:0 24rpx 16rpx" wx:if="{{towerRatio}}">
+    <view class="section-title">🗼 塔筒构造比例</view>
+    <view class="flex-row gap-16 mt-16">
+      <view class="flex-1 text-center">
+        <text class="text-2xl font-bold text-green block">{{fmt.fmtPct(towerRatio.overall.steel_pct)}}</text>
+        <text class="text-xs text-gray">钢塔</text>
+      </view>
+      <view class="flex-1 text-center">
+        <text class="text-2xl font-bold text-orange block">{{fmt.fmtPct(towerRatio.overall.hybrid_pct)}}</text>
+        <text class="text-xs text-gray">混塔</text>
+      </view>
+      <view class="flex-1 text-center">
+        <text class="text-2xl font-bold text-gray block">{{fmt.fmtPct(towerRatio.overall.unknown_pct)}}</text>
+        <text class="text-xs text-gray">待确认</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 省份排名 -->
+  <view class="card" style="margin:0 24rpx 16rpx" wx:if="{{provinceStats.length > 0}}">
+    <view class="section-title">🗺️ 省份装机 Top 10</view>
+    <view class="province-item flex-row gap-12" wx:for="{{provinceStats}}" wx:key="province_id" wx:for-item="p" wx:for-index="idx">
+      <text class="text-sm font-bold" style="width:40rpx">{{idx + 1}}</text>
+      <text class="text-sm flex-1">{{p.province_name}}</text>
+      <text class="text-sm font-bold text-green">{{(p.total_capacity_mw / 1000).toFixed(1)}} GW</text>
+      <text class="text-xs text-gray">{{p.project_count}}个项目</text>
+    </view>
+  </view>
+
+  <!-- 供应商排名 -->
+  <view class="card" style="margin:0 24rpx 16rpx" wx:if="{{supplierRanking.length > 0}}">
+    <view class="section-title">🏭 供应商排名</view>
+    <view class="supplier-item flex-row gap-12" wx:for="{{supplierRanking}}" wx:key="supplier" wx:for-item="s" wx:for-index="idx">
+      <text class="text-sm font-bold" style="width:40rpx">{{idx + 1}}</text>
+      <view class="flex-1">
+        <text class="text-sm font-medium">{{s.supplier}}</text>
+        <text class="text-xs text-gray block">{{s.project_count}}个项目 · {{s.total_turbines}}台风机</text>
+      </view>
+      <text class="text-sm font-bold text-green">{{fmt.fmtGW(s.total_capacity_mw)}}</text>
+    </view>
+  </view>
+
+  <view style="height:40rpx"></view>
+</block>

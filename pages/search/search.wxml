@@ -1,0 +1,60 @@
+<!-- 搜索框 -->
+<view class="search-header bg-white p-24">
+  <view class="search-box flex-row gap-12">
+    <text class="search-icon-text">🔍</text>
+    <input
+      class="flex-1 search-field"
+      placeholder="项目名称、业主、供应商..."
+      value="{{keyword}}"
+      bindinput="onInput"
+      bindconfirm="onSearch"
+      confirm-type="search"
+      focus
+    />
+    <text class="search-btn text-green font-bold" bindtap="onSearch" data-value="{{keyword}}">搜索</text>
+  </view>
+</view>
+
+<!-- 搜索结果 -->
+<view wx:if="{{searched}}">
+  <view class="px-24 py-16" wx:if="{{results.length > 0}}">
+    <text class="text-sm text-gray">找到 {{results.length}} 个结果</text>
+  </view>
+
+  <project-card
+    wx:for="{{results}}"
+    wx:key="id"
+    project="{{item}}"
+    bind:tap="onProjectTap"
+  />
+
+  <view class="empty-state flex-col text-center" wx:if="{{!searching && results.length === 0}}">
+    <text style="font-size:80rpx">🔍</text>
+    <text class="text-lg text-gray mt-16">未找到匹配的项目</text>
+    <text class="text-sm text-gray mt-16">尝试其他关键词</text>
+  </view>
+
+  <view class="text-center py-16" wx:if="{{searching}}">
+    <text class="text-gray">搜索中...</text>
+  </view>
+</view>
+
+<!-- 搜索历史 -->
+<view class="history-section p-24" wx:if="{{!searched && history.length > 0}}">
+  <view class="flex-row mb-16">
+    <text class="font-bold">搜索历史</text>
+    <text class="flex-1"></text>
+    <text class="text-sm text-gray" bindtap="onClearHistory">清空</text>
+  </view>
+  <view class="flex-row gap-12 flex-wrap">
+    <view
+      class="history-tag"
+      wx:for="{{history}}"
+      wx:key="*this"
+      bindtap="onHistoryTap"
+      data-keyword="{{item}}"
+    >
+      {{item}}
+    </view>
+  </view>
+</view>

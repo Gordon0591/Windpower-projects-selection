@@ -1,0 +1,92 @@
+<!-- 头部 -->
+<view class="mine-header bg-white p-24 text-center">
+  <view class="avatar">🌬️</view>
+  <text class="text-lg font-bold block mt-16">风电项目信息</text>
+  <text class="text-sm text-gray block mt-16">数据驱动 · 洞察行业</text>
+</view>
+
+<!-- 数据概览 -->
+<view class="card" style="margin:16rpx 24rpx">
+  <view class="section-title">📡 数据更新</view>
+  <view class="flex-row gap-16 mt-16">
+    <view class="flex-1 text-center">
+      <text class="text-xl font-bold text-green block">9</text>
+      <text class="text-xs text-gray">数据源</text>
+    </view>
+    <view class="flex-1 text-center">
+      <text class="text-xl font-bold text-blue block">每2h</text>
+      <text class="text-xs text-gray">采集频率</text>
+    </view>
+    <view class="flex-1 text-center">
+      <text class="text-xl font-bold text-sky block">AI</text>
+      <text class="text-xs text-gray">智能提取</text>
+    </view>
+  </view>
+</view>
+
+<!-- 推送设置 -->
+<view class="card" style="margin:0 24rpx 16rpx">
+  <view class="section-title">🔔 新项目通知</view>
+  <view class="flex-row mt-16">
+    <text class="flex-1">启用推送通知</text>
+    <switch checked="{{notificationsEnabled}}" bindchange="onNotificationToggle" color="#166534" />
+  </view>
+  <text class="text-xs text-gray mt-16 block">当有新核准/招标/在建项目时推送通知（需微信订阅消息授权）</text>
+</view>
+
+<!-- 关注设置 -->
+<view class="card" style="margin:0 24rpx 16rpx">
+  <view class="section-title">⭐ 关注设置</view>
+  <text class="text-xs text-gray block">设置关注的省份和项目类型，首页将优先展示</text>
+
+  <view class="mt-16">
+    <text class="text-sm font-bold text-gray">关注省份</text>
+    <view class="flex-row gap-8 flex-wrap mt-16">
+      <view
+        class="sub-tag {{subscriptions.provinces.indexOf('广东') > -1 ? 'active' : ''}}"
+        data-field="provinces" data-value="广东" bindtap="onSubChange"
+      >广东</view>
+      <view
+        class="sub-tag {{subscriptions.provinces.indexOf('江苏') > -1 ? 'active' : ''}}"
+        data-field="provinces" data-value="江苏" bindtap="onSubChange"
+      >江苏</view>
+      <view
+        class="sub-tag {{subscriptions.provinces.indexOf('福建') > -1 ? 'active' : ''}}"
+        data-field="provinces" data-value="福建" bindtap="onSubChange"
+      >福建</view>
+      <view
+        class="sub-tag {{subscriptions.provinces.indexOf('山东') > -1 ? 'active' : ''}}"
+        data-field="provinces" data-value="山东" bindtap="onSubChange"
+      >山东</view>
+      <view
+        class="sub-tag {{subscriptions.provinces.indexOf('内蒙古') > -1 ? 'active' : ''}}"
+        data-field="provinces" data-value="内蒙古" bindtap="onSubChange"
+      >内蒙古</view>
+      <view
+        class="sub-tag {{subscriptions.provinces.indexOf('新疆') > -1 ? 'active' : ''}}"
+        data-field="provinces" data-value="新疆" bindtap="onSubChange"
+      >新疆</view>
+    </view>
+  </view>
+
+  <view class="mt-16">
+    <text class="text-sm font-bold text-gray">最低装机容量 (MW)</text>
+    <input
+      class="capacity-input mt-16"
+      type="digit"
+      placeholder="如: 100"
+      value="{{subscriptions.minCapacity}}"
+      bindinput="onCapacityInput"
+    />
+  </view>
+</view>
+
+<!-- 关于 -->
+<view class="card" style="margin:0 24rpx 16rpx" bindtap="onAbout">
+  <view class="flex-row">
+    <text class="flex-1">关于</text>
+    <text class="text-gray">v0.1.0 ›</text>
+  </view>
+</view>
+
+<view style="height:40rpx"></view>

@@ -1,0 +1,94 @@
+<wxs module="fmt">
+  var statusMap = {
+    planned: '规划', approved: '核准', bidding: '招标',
+    construction: '在建', grid_connected: '并网',
+    completed: '完工', shelved: '搁置', cancelled: '取消'
+  };
+  var typeMap = { onshore: '陆上', offshore: '海上' };
+
+  module.exports.formatStatus = function(code) {
+    return statusMap[code] || code || '';
+  };
+  module.exports.formatType = function(code) {
+    return typeMap[code] || code || '';
+  };
+  module.exports.formatDate = function(dateStr) {
+    if (!dateStr) return '';
+    return dateStr.slice(0, 7);  // YYYY-MM
+  };
+  module.exports.formatCapacity = function(mw) {
+    if (!mw) return '';
+    return mw >= 1000 ? (mw / 1000).toFixed(1) + ' GW' : mw + ' MW';
+  };
+  module.exports.formatMoney = function(bn) {
+    if (!bn) return '';
+    return bn.toFixed(0) + '亿元';
+  };
+</wxs>
+
+<view class="card project-card" bindtap="onTap">
+  <!-- 头部：状态 + 类型 -->
+  <view class="card-header flex-row gap-8">
+    <text class="tag status-{{project.status.code}}">
+      {{fmt.formatStatus(project.status.code)}}
+    </text>
+    <text class="tag tag-sky" wx:if="{{project.project_type.code === 'offshore'}}">
+      海上
+    </text>
+    <text class="tag tag-green" wx:if="{{project.project_type.code === 'onshore'}}">
+      陆上
+    </text>
+    <text class="flex-1"></text>
+    <text class="text-sm text-gray" wx:if="{{project.is_verified}}">✅ 已核实</text>
+  </view>
+
+  <!-- 项目名称 -->
+  <view class="project-name text-lg font-bold">{{project.name}}</view>
+
+  <!-- 业主 + 省份 -->
+  <view class="project-subtitle flex-row gap-12 mt-16" wx:if="{{project.owner || showProvince}}">
+    <text class="text-gray" wx:if="{{project.owner}}">{{project.owner}}</text>
+    <text class="text-gray" wx:if="{{project.province}}">· {{project.province.name}}</text>
+  </view>
+
+  <!-- 核心指标行 -->
+  <view class="metrics-row flex-row gap-16 mt-16">
+    <view class="metric-item flex-col">
+      <text class="metric-value text-2xl font-bold text-green">
+        {{fmt.formatCapacity(project.capacity_mw)}}
+      </text>
+      <text class="metric-label text-xs text-gray">装机容量</text>
+    </view>
+    <view class="metric-divider"></view>
+    <view class="metric-item flex-col" wx:if="{{project.turbine_count}}">
+      <text class="metric-value text-xl font-bold">{{project.turbine_count}}台</text>
+      <text class="metric-label text-xs text-gray">风机数量</text>
+    </view>
+    <view class="metric-divider" wx:if="{{project.turbine_count}}"></view>
+    <view class="metric-item flex-col" wx:if="{{project.unit_capacity_mw}}">
+      <text class="metric-value text-xl font-bold">{{project.unit_capacity_mw}}MW</text>
+      <text class="metric-label text-xs text-gray">单机容量</text>
+    </view>
+    <view class="metric-divider" wx:if="{{project.tower_type.code !== 'unknown'}}"></view>
+    <view class="metric-item flex-col" wx:if="{{project.tower_type.code !== 'unknown'}}">
+      <text class="metric-value text-xl font-bold">
+        {{project.tower_type.code === 'steel' ? '钢塔' : '混塔'}}
+      </text>
+      <text class="metric-label text-xs text-gray">塔筒构造</text>
+    </view>
+  </view>
+
+  <!-- 底部信息：供应商 + 日期 -->
+  <view class="card-footer flex-row gap-12 mt-16" wx:if="{{project.turbine_supplier || project.approval_date || project.investment_bn}}">
+    <text class="text-sm text-gray" wx:if="{{project.turbine_supplier}}">
+      🏭 {{project.turbine_supplier}}
+    </text>
+    <text class="text-sm text-gray" wx:if="{{project.investment_bn}}">
+      💰 {{fmt.formatMoney(project.investment_bn)}}
+    </text>
+    <text class="flex-1"></text>
+    <text class="text-sm text-gray" wx:if="{{project.approval_date}}">
+      核准 {{fmt.formatDate(project.approval_date)}}
+    </text>
+  </view>
+</view>

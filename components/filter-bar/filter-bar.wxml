@@ -1,0 +1,53 @@
+<view class="filter-bar">
+  <!-- 快捷筛选标签 -->
+  <scroll-view class="quick-filters flex-row gap-12" scroll-x enable-flex>
+    <view
+      class="quick-tag {{tempFilters[key] === value ? 'active' : ''}}"
+      wx:for="{{quickFilters}}"
+      wx:key="index"
+      wx:for-item="f"
+      data-key="{{f.key}}"
+      data-value="{{f.value}}"
+      bindtap="onQuickTap"
+    >
+      {{f.label}}
+    </view>
+    <view class="quick-tag more {{showPanel ? 'active' : ''}}" bindtap="togglePanel">
+      更多 ▼
+    </view>
+  </scroll-view>
+
+  <!-- 展开面板 -->
+  <view class="filter-panel {{showPanel ? 'show' : ''}}">
+    <view class="panel-title text-sm font-bold text-gray">项目类型</view>
+    <view class="flex-row gap-12 flex-wrap mt-16">
+      <view
+        class="panel-tag {{tempFilters.project_type === item.code ? 'active' : ''}}"
+        wx:for="{{typeOptions}}"
+        wx:key="code"
+        data-code="{{item.code}}"
+        bindtap="onTypeTap"
+      >
+        {{item.name}}
+      </view>
+    </view>
+
+    <view class="panel-title text-sm font-bold text-gray" style="margin-top:24rpx">塔筒构造</view>
+    <view class="flex-row gap-12 flex-wrap mt-16">
+      <view
+        class="panel-tag {{tempFilters.tower_type === item.code ? 'active' : ''}}"
+        wx:for="{{towerOptions}}"
+        wx:key="code"
+        data-code="{{item.code}}"
+        bindtap="onTowerTap"
+      >
+        {{item.name}}
+      </view>
+    </view>
+
+    <view class="panel-actions flex-row gap-16 mt-16">
+      <button class="btn-reset flex-1" bindtap="onReset">重置</button>
+      <button class="btn-confirm flex-1" bindtap="onConfirm">确定</button>
+    </view>
+  </view>
+</view>

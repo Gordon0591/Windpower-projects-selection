@@ -1,0 +1,42 @@
+<!-- 搜索栏 -->
+<view class="search-bar" bindtap="onSearchTap">
+  <view class="search-input">
+    <text class="search-icon">🔍</text>
+    <text class="search-placeholder">搜索项目名称、业主、供应商...</text>
+  </view>
+</view>
+
+<!-- 筛选栏 -->
+<filter-bar currentFilters="{{filters}}" bind:change="onFilterChange" />
+
+<!-- 项目列表 -->
+<view class="project-list">
+  <!-- 结果统计 -->
+  <view class="list-header px-24 py-16" wx:if="{{total > 0}}">
+    <text class="text-sm text-gray">共 {{total}} 个项目</text>
+  </view>
+
+  <!-- 项目卡片 -->
+  <project-card
+    wx:for="{{projects}}"
+    wx:key="id"
+    project="{{item}}"
+    bind:tap="onProjectTap"
+  />
+
+  <!-- 加载状态 -->
+  <view class="load-more text-center py-16" wx:if="{{loading}}">
+    <text class="text-gray">加载中...</text>
+  </view>
+
+  <view class="load-more text-center py-16" wx:if="{{!hasMore && projects.length > 0}}">
+    <text class="text-gray">— 已加载全部 —</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state flex-col text-center" wx:if="{{!loading && projects.length === 0}}">
+    <text style="font-size:80rpx">📭</text>
+    <text class="text-lg text-gray mt-16">暂无匹配的项目</text>
+    <text class="text-sm text-gray mt-16">尝试调整筛选条件</text>
+  </view>
+</view>

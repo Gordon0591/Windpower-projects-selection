@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "数据看板",
+  "usingComponents": {
+    "stat-card": "/components/stat-card/stat-card"
+  }
+}

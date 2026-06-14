@@ -1,0 +1,42 @@
+.project-card {
+  margin: 0 24rpx 16rpx 24rpx;
+}
+
+.project-name {
+  margin-top: 12rpx;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.project-subtitle {
+  flex-wrap: wrap;
+}
+
+.metrics-row {
+  flex-wrap: wrap;
+}
+
+.metric-item {
+  min-width: 100rpx;
+}
+
+.metric-value {
+  line-height: 1.2;
+}
+
+.metric-label {
+  margin-top: 4rpx;
+}
+
+.metric-divider {
+  width: 2rpx;
+  height: 48rpx;
+  background: var(--gray-200);
+}
+
+.card-footer {
+  flex-wrap: wrap;
+}
